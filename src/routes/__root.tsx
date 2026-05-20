@@ -72,14 +72,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "MumbAI-Vote · 2024 Lok Sabha vs Vidhan Sabha Mumbai Dashboard" },
+      { name: "description", content: "Interactive comparative intelligence dashboard analyzing Mumbai's split-ticket voting across the 2024 Lok Sabha and Vidhan Sabha — 6 PCs, 36 ACs, swing, turnout and anomaly analytics." },
+      { property: "og:title", content: "MumbAI-Vote · 2024 LS vs VS Mumbai" },
+      { property: "og:description", content: "Mumbai split-ticket analytics across LS and VS 2024." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
