@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TurnoutRouteImport } from './routes/turnout'
 import { Route as SwingRouteImport } from './routes/swing'
 import { Route as MappingRouteImport } from './routes/mapping'
+import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TurnoutRoute = TurnoutRouteImport.update({
@@ -29,6 +30,11 @@ const MappingRoute = MappingRouteImport.update({
   path: '/mapping',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InsightsRoute = InsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +43,14 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/insights': typeof InsightsRoute
   '/mapping': typeof MappingRoute
   '/swing': typeof SwingRoute
   '/turnout': typeof TurnoutRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/insights': typeof InsightsRoute
   '/mapping': typeof MappingRoute
   '/swing': typeof SwingRoute
   '/turnout': typeof TurnoutRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/insights': typeof InsightsRoute
   '/mapping': typeof MappingRoute
   '/swing': typeof SwingRoute
   '/turnout': typeof TurnoutRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mapping' | '/swing' | '/turnout'
+  fullPaths: '/' | '/insights' | '/mapping' | '/swing' | '/turnout'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mapping' | '/swing' | '/turnout'
-  id: '__root__' | '/' | '/mapping' | '/swing' | '/turnout'
+  to: '/' | '/insights' | '/mapping' | '/swing' | '/turnout'
+  id: '__root__' | '/' | '/insights' | '/mapping' | '/swing' | '/turnout'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  InsightsRoute: typeof InsightsRoute
   MappingRoute: typeof MappingRoute
   SwingRoute: typeof SwingRoute
   TurnoutRoute: typeof TurnoutRoute
@@ -92,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MappingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  InsightsRoute: InsightsRoute,
   MappingRoute: MappingRoute,
   SwingRoute: SwingRoute,
   TurnoutRoute: TurnoutRoute,
@@ -111,3 +129,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
