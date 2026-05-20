@@ -107,7 +107,7 @@ function MapTooltip({ x, y, ac, cycle }: { x: number; y: number; ac: AC; cycle: 
         <Mini label="Turnout" value={`${k.turnout_pct.toFixed(1)}%`} />
       </div>
       {ac.metrics.alliance_split_ticket && (
-        <div className="mt-1.5 text-[10px] text-primary uppercase tracking-wider">⚡ Split-ticket AC</div>
+        <div className="mt-1.5 text-[10px] text-primary uppercase tracking-wider">Changed vote May vs Nov</div>
       )}
       <div className="mt-1.5 text-[10px] text-muted-foreground">Click for full breakdown →</div>
     </div>

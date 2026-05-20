@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils";
 import { LayoutDashboard, Map, TrendingUp, Activity, Lightbulb } from "lucide-react";
 
 const TABS = [
-  { to: "/", label: "Macro", icon: LayoutDashboard },
-  { to: "/mapping", label: "Map", icon: Map },
-  { to: "/swing", label: "Swing", icon: TrendingUp },
+  { to: "/", label: "Overview", icon: LayoutDashboard },
+  { to: "/mapping", label: "Maps", icon: Map },
+  { to: "/swing", label: "Votes", icon: TrendingUp },
   { to: "/turnout", label: "Turnout", icon: Activity },
-  { to: "/insights", label: "Insights", icon: Lightbulb },
+  { to: "/analysis", label: "Analysis", icon: Lightbulb },
 ];
 
 export function TopBar() {
@@ -21,7 +21,7 @@ export function TopBar() {
     <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur">
       <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
         <div className="flex items-center gap-2 lg:hidden">
-          <div className="text-sm font-semibold tracking-tight">MumbAI-Vote</div>
+          <div className="text-sm font-semibold tracking-tight">Mumbai 2024</div>
         </div>
 
         <div className="flex items-center gap-2">

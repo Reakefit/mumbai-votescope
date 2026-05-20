@@ -1,6 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import type { AC } from "@/data/constituencies";
 import { ALLIANCE_COLOR, fmtInt, fmtPct } from "@/lib/election-colors";
+import { DataAttribution } from "@/components/common/data-attribution";
 
 export function ACDetailSheet({ ac, onClose }: { ac: AC | null; onClose: () => void }) {
   return (
@@ -13,26 +14,28 @@ export function ACDetailSheet({ ac, onClose }: { ac: AC | null; onClose: () => v
                 {ac.ac_name}
                 <span className="text-xs text-muted-foreground num">#{ac.ac_number}</span>
               </SheetTitle>
-              <SheetDescription>{ac.parent_pc} · Localized asset report</SheetDescription>
+              <SheetDescription>
+                {ac.parent_pc}. May shows the parliamentary (MP) result for this seat. November shows the assembly (MLA) result for this ward.
+              </SheetDescription>
             </SheetHeader>
 
             <div className="px-4 mt-4 grid grid-cols-2 gap-3">
-              <CycleCard label="Lok Sabha 2024" data={ac.lok_sabha_2024} />
-              <CycleCard label="Vidhan Sabha 2024" data={ac.vidhan_sabha_2024} />
+              <CycleCard label="May 2024 · Parliament" data={ac.lok_sabha_2024} />
+              <CycleCard label="Nov 2024 · State" data={ac.vidhan_sabha_2024} />
             </div>
 
             <div className="px-4 mt-5 space-y-2">
-              <MetricRow label="Vote-share swing (LS→VS)" value={fmtPct(ac.metrics.vote_share_swing_pct, true)} />
-              <MetricRow label="Turnout delta" value={fmtPct(ac.metrics.turnout_delta_pct, true)} />
+              <MetricRow label="Vote share change (May to Nov)" value={fmtPct(ac.metrics.vote_share_swing_pct, true)} />
+              <MetricRow label="Turnout change" value={fmtPct(ac.metrics.turnout_delta_pct, true)} />
               <MetricRow
-                label="Alliance split-ticket"
-                value={ac.metrics.alliance_split_ticket ? "Yes — voters switched alliance" : "No — consistent"}
+                label="Different alliance in May vs November?"
+                value={ac.metrics.alliance_split_ticket ? "Yes" : "No"}
                 accent={ac.metrics.alliance_split_ticket}
               />
             </div>
 
-            <div className="px-4 mt-6 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-              Mock illustrative data. Calibrated to reflect the macro 2024 pattern across Mumbai.
+            <div className="px-4 mt-6">
+              <DataAttribution compact />
             </div>
           </>
         )}

@@ -28,7 +28,7 @@ export function ChoroplethMap({ cycle, title, hoveredAC, setHoveredAC, onSelect,
       <div className="flex items-baseline justify-between mb-2">
         <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-          {cycle === "ls" ? "Apr–Jun 2024" : "Nov 2024"}
+          {cycle === "ls" ? "May 2024" : "Nov 2024"}
         </span>
       </div>
       <div className="relative">
@@ -114,7 +114,7 @@ function Tip({ ac, cycle }: { ac: AC; cycle: Cycle }) {
       <Row label="Turnout" value={`${k.turnout_pct.toFixed(1)}%`} />
       <Row label="LS→VS swing" value={`${swing > 0 ? "+" : ""}${swing.toFixed(1)}%`} accent />
       {ac.metrics.alliance_split_ticket && (
-        <div className="mt-1 text-[10px] text-primary uppercase tracking-wider">⚡ Split-ticket</div>
+        <div className="mt-1 text-[10px] text-primary uppercase tracking-wider">Changed May vs Nov</div>
       )}
     </div>
   );

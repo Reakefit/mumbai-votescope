@@ -35,9 +35,9 @@ function Page() {
     <Shell>
       <div className="max-w-[1400px] mx-auto space-y-5">
         <header>
-          <h1 className="text-2xl font-semibold tracking-tight">Turnout Dynamics & Engagement</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Turnout in May vs November</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Voter fatigue between LS and VS, and which ACs are battlegrounds vs fortresses.
+            Did fewer people vote in the state election? Which areas had high turnout but still changed winner?
           </p>
         </header>
 
@@ -78,7 +78,7 @@ function Page() {
 
         <div className="rounded-lg border border-border bg-card/40 p-4">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold tracking-tight">Engagement vs Margin — Four Quadrants</h3>
+            <h3 className="text-sm font-semibold tracking-tight">Turnout vs winning margin (November)</h3>
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
               VS margin · Median turnout {medianTurnout.toFixed(1)}% · Median margin {Math.round(medianMargin).toLocaleString("en-IN")}
             </span>

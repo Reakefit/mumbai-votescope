@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TurnoutRouteImport } from './routes/turnout'
 import { Route as SwingRouteImport } from './routes/swing'
+import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as MappingRouteImport } from './routes/mapping'
 import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TurnoutRoute = TurnoutRouteImport.update({
@@ -25,6 +27,11 @@ const SwingRoute = SwingRouteImport.update({
   path: '/swing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MethodologyRoute = MethodologyRouteImport.update({
+  id: '/methodology',
+  path: '/methodology',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MappingRoute = MappingRouteImport.update({
   id: '/mapping',
   path: '/mapping',
@@ -35,6 +42,11 @@ const InsightsRoute = InsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalysisRoute = AnalysisRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,38 +55,68 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/insights': typeof InsightsRoute
   '/mapping': typeof MappingRoute
+  '/methodology': typeof MethodologyRoute
   '/swing': typeof SwingRoute
   '/turnout': typeof TurnoutRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/insights': typeof InsightsRoute
   '/mapping': typeof MappingRoute
+  '/methodology': typeof MethodologyRoute
   '/swing': typeof SwingRoute
   '/turnout': typeof TurnoutRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/insights': typeof InsightsRoute
   '/mapping': typeof MappingRoute
+  '/methodology': typeof MethodologyRoute
   '/swing': typeof SwingRoute
   '/turnout': typeof TurnoutRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/insights' | '/mapping' | '/swing' | '/turnout'
+  fullPaths:
+    | '/'
+    | '/analysis'
+    | '/insights'
+    | '/mapping'
+    | '/methodology'
+    | '/swing'
+    | '/turnout'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/insights' | '/mapping' | '/swing' | '/turnout'
-  id: '__root__' | '/' | '/insights' | '/mapping' | '/swing' | '/turnout'
+  to:
+    | '/'
+    | '/analysis'
+    | '/insights'
+    | '/mapping'
+    | '/methodology'
+    | '/swing'
+    | '/turnout'
+  id:
+    | '__root__'
+    | '/'
+    | '/analysis'
+    | '/insights'
+    | '/mapping'
+    | '/methodology'
+    | '/swing'
+    | '/turnout'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalysisRoute: typeof AnalysisRoute
   InsightsRoute: typeof InsightsRoute
   MappingRoute: typeof MappingRoute
+  MethodologyRoute: typeof MethodologyRoute
   SwingRoute: typeof SwingRoute
   TurnoutRoute: typeof TurnoutRoute
 }
@@ -95,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SwingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/methodology': {
+      id: '/methodology'
+      path: '/methodology'
+      fullPath: '/methodology'
+      preLoaderRoute: typeof MethodologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mapping': {
       id: '/mapping'
       path: '/mapping'
@@ -109,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analysis': {
+      id: '/analysis'
+      path: '/analysis'
+      fullPath: '/analysis'
+      preLoaderRoute: typeof AnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,8 +177,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalysisRoute: AnalysisRoute,
   InsightsRoute: InsightsRoute,
   MappingRoute: MappingRoute,
+  MethodologyRoute: MethodologyRoute,
   SwingRoute: SwingRoute,
   TurnoutRoute: TurnoutRoute,
 }

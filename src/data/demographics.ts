@@ -14,7 +14,7 @@ export interface Demographics {
 }
 
 export const DEMOGRAPHICS: Record<number, Demographics> = {
-  // Mumbai South — Island City
+  // Mumbai South, Island City
   187: { density: "Mixed",       income: "Affluent",   geo: "Island City", muslim_share_pct: 12 },
   186: { density: "Ultra-dense", income: "Mixed",      geo: "Island City", muslim_share_pct: 38 },
   185: { density: "Sparse",      income: "Affluent",   geo: "Island City", muslim_share_pct:  6 },

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Shell } from "@/components/layout/shell";
 import { filterByPC } from "@/data/constituencies";
+import { ALLIANCE_COLOR } from "@/lib/election-colors";
 import { useFilters } from "@/hooks/use-filters";
 import { PARTY_COLOR } from "@/lib/election-colors";
 import {
@@ -24,7 +25,7 @@ function Page() {
   const acs = filterByPC(pc);
   const [cycle, setCycle] = useState<"ls" | "vs">("vs");
 
-  // Margin (positive = Mahayuti lead, negative = MVA lead) — using winning alliance margin
+  // Margin (positive = Mahayuti lead, negative = MVA lead), using winning alliance margin
   const marginData = acs.map(a => {
     const k = cycle === "ls" ? a.lok_sabha_2024 : a.vidhan_sabha_2024;
     const signed = (k.winning_alliance === "Mahayuti" ? 1 : -1) * k.margin_votes;
@@ -42,23 +43,31 @@ function Page() {
 
   const parties = Array.from(new Set(scatter.map(s => s.party)));
 
+  const swingData = [...acs]
+    .sort((a, b) => Math.abs(b.metrics.vote_share_swing_pct) - Math.abs(a.metrics.vote_share_swing_pct))
+    .map((a) => ({
+      name: a.ac_name,
+      swing: a.metrics.vote_share_swing_pct,
+      alliance: a.vidhan_sabha_2024.winning_alliance,
+    }));
+
   return (
     <Shell>
       <div className="max-w-[1400px] mx-auto space-y-5">
         <header>
-          <h1 className="text-2xl font-semibold tracking-tight">Vote Share & Swing Engine</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Vote share and swings</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Where the margins collapsed, expanded, and which local brands held against the national symbol.
+            See how far each party moved between May (Parliament) and November (State), and how big the winning margin was.
           </p>
         </header>
 
         <div className="rounded-lg border border-border bg-card/40 p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold tracking-tight">Coalition margin per AC <span className="text-muted-foreground font-normal">· positive = Mahayuti, negative = MVA</span></h3>
+            <h3 className="text-sm font-semibold tracking-tight">Winning margin per area <span className="text-muted-foreground font-normal">(positive = Mahayuti lead)</span></h3>
             <Tabs value={cycle} onValueChange={(v) => setCycle(v as "ls" | "vs")}>
               <TabsList className="h-7">
-                <TabsTrigger value="ls" className="text-xs px-2.5">Lok Sabha</TabsTrigger>
-                <TabsTrigger value="vs" className="text-xs px-2.5">Vidhan Sabha</TabsTrigger>
+                <TabsTrigger value="ls" className="text-xs px-2.5">May</TabsTrigger>
+                <TabsTrigger value="vs" className="text-xs px-2.5">November</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -84,9 +93,34 @@ function Page() {
         </div>
 
         <div className="rounded-lg border border-border bg-card/40 p-4">
-          <h3 className="text-sm font-semibold tracking-tight mb-1">Party-Wise Dilution · Vote share LS vs VS</h3>
+          <h3 className="text-sm font-semibold tracking-tight">Winner vote-share shift (May to November)</h3>
           <p className="text-[11px] text-muted-foreground mb-3">
-            Points above the diagonal grew between cycles; below the diagonal lost share. Bubble size = VS margin.
+            Change in the November winner&apos;s vote share vs the May winner&apos;s share on the same tile (dataset metric). Positive bars: share rose for the party that won in November.
+          </p>
+          <div className="h-96">
+            <ResponsiveContainer>
+              <BarChart data={swingData} margin={{ top: 6, right: 12, bottom: 56, left: 8 }}>
+                <CartesianGrid stroke="oklch(1 0 0 / 0.05)" vertical={false} />
+                <XAxis dataKey="name" angle={-45} textAnchor="end" interval={0}
+                  tick={{ fontSize: 10, fill: "oklch(0.68 0.018 250)" }} height={68} />
+                <YAxis tick={{ fontSize: 10, fill: "oklch(0.68 0.018 250)" }} unit="%" />
+                <Tooltip contentStyle={tipStyle}
+                  formatter={(v: number) => [`${v.toFixed(1)}%`, "Share shift"]} />
+                <ReferenceLine y={0} stroke="oklch(1 0 0 / 0.2)" />
+                <Bar dataKey="swing" radius={[3, 3, 3, 3]}>
+                  {swingData.map((d, i) => (
+                    <Cell key={i} fill={d.swing >= 0 ? ALLIANCE_COLOR.Mahayuti : ALLIANCE_COLOR.MVA} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-border bg-card/40 p-4">
+          <h3 className="text-sm font-semibold tracking-tight mb-1">Vote share: May vs November</h3>
+          <p className="text-[11px] text-muted-foreground mb-3">
+            Each dot is one area. Above the line means the party gained share from May to November. Dot size shows November margin.
           </p>
           <div className="h-96">
             <ResponsiveContainer>

@@ -5,7 +5,7 @@ export const ALLIANCE_COLOR: Record<Alliance, string> = {
   MVA: "var(--mva)",
 };
 
-// Party sub-shades — derived around alliance hue
+// Party sub-shades, derived around alliance hue
 export const PARTY_COLOR: Record<Party, string> = {
   BJP: "oklch(0.74 0.18 50)",
   SHS: "oklch(0.78 0.16 70)",

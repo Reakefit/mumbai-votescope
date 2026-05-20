@@ -1,6 +1,8 @@
-// Mock 2024 Lok Sabha vs Vidhan Sabha data for Mumbai's 6 PCs / 36 ACs.
-// Values are illustrative, calibrated to reproduce the known macro pattern:
-// MVA stronger in LS, Mahayuti sweep in VS, with several split-ticket ACs.
+import { aggregatePCSeats, filterPCs } from "./pc-results";
+
+// 2024 Lok Sabha (6 PCs) + Vidhan Sabha (36 ACs) for Mumbai.
+// LS: ECI / IndiaVotes per parliamentary seat. VS: per-AC results (IndiaVotes, ECI, Wikipedia).
+// LS fields on each AC mirror the parent PC winner for map colouring only.
 
 export type Alliance = "MVA" | "Mahayuti";
 export type Party =
@@ -53,8 +55,12 @@ interface RawAC {
   vs: [Alliance, Party, string, number, number, number];
 }
 
-// Real 2024 results: LS per parent PC and VS per AC parsed from Wikipedia.
-// Turnout: LS per-PC actual; VS uses district turnout (Mumbai City 52.65 / Suburban 56.39) as AC proxy.
+function cleanCandidate(raw: string): string {
+  const pipe = raw.indexOf("|");
+  return pipe >= 0 ? raw.slice(pipe + 1) : raw;
+}
+
+// VS per AC (sourced). LS tuple duplicated per PC group below.
 const RAW: RawAC[][] = [
   [
     { n: 187, name: "Colaba", pc: "Mumbai South",
@@ -91,7 +97,7 @@ const RAW: RawAC[][] = [
       vs: ["MVA","INC","Jyoti Gaikwad",53.87,23459,52.65] },
     { n: 173, name: "Chembur", pc: "Mumbai South Central",
       ls: ["MVA","SS(UBT)","Anil Desai",49.73,53384,53.9],
-      vs: ["Mahayuti","SHS","Tukaram Ramkrishna Kate|Tukaram Kate",44.18,10711,52.65] },
+      vs: ["Mahayuti","SHS","Tukaram Kate",44.18,10711,52.65] },
     { n: 172, name: "Anushakti Nagar", pc: "Mumbai South Central",
       ls: ["MVA","SS(UBT)","Anil Desai",49.73,53384,53.9],
       vs: ["Mahayuti","NCP","Sana Malik",33.78,3378,52.65] },
@@ -142,10 +148,10 @@ const RAW: RawAC[][] = [
       vs: ["Mahayuti","SHS","Murji Patel",55.66,25486,56.39] },
     { n: 165, name: "Andheri West", pc: "Mumbai North West",
       ls: ["Mahayuti","SHS","Ravindra Waikar",47.4,48,55.04],
-      vs: ["Mahayuti","BJP","Ameet Bhaskar Satam|Ameet Satam",54.75,19599,56.39] },
+      vs: ["Mahayuti","BJP","Ameet Satam",54.75,19599,56.39] },
     { n: 164, name: "Versova", pc: "Mumbai North West",
       ls: ["Mahayuti","SHS","Ravindra Waikar",47.4,48,55.04],
-      vs: ["MVA","SS(UBT)","Haroon Khan (Maharashtra politician)|Haroon Rashid Khan",44.21,1600,56.39] },
+      vs: ["MVA","SS(UBT)","Haroon Rashid Khan",44.21,1600,56.39] },
     { n: 163, name: "Goregaon", pc: "Mumbai North West",
       ls: ["Mahayuti","SHS","Ravindra Waikar",47.4,48,55.04],
       vs: ["Mahayuti","BJP","Vidya Thakur",52.39,23600,56.39] },
@@ -171,7 +177,7 @@ const RAW: RawAC[][] = [
       vs: ["Mahayuti","SHS","Prakash Surve",58.15,58164,56.39] },
     { n: 153, name: "Dahisar", pc: "Mumbai North",
       ls: ["Mahayuti","BJP","Piyush Goyal",65.68,357608,57.2],
-      vs: ["Mahayuti","BJP","Manisha Ashok Chaudhary|Manisha Chaudhary",60.64,44329,56.39] },
+      vs: ["Mahayuti","BJP","Manisha Chaudhary",60.64,44329,56.39] },
     { n: 152, name: "Borivali", pc: "Mumbai North",
       ls: ["Mahayuti","BJP","Piyush Goyal",65.68,357608,57.2],
       vs: ["Mahayuti","BJP","Sanjay Upadhyay",68.57,100257,56.39] },
@@ -184,19 +190,20 @@ function pcRow(pc: string) { return PC_LIST.find(p => p.name === pc)!.row; }
 export const ACS: AC[] = RAW.flatMap((row, rowIdx) =>
   row.map((r, colIdx) => {
     const ls: CycleResult = {
-      winning_alliance: r.ls[0], winning_party: r.ls[1], candidate: r.ls[2],
+      winning_alliance: r.ls[0], winning_party: r.ls[1], candidate: cleanCandidate(r.ls[2]),
       vote_share_pct: r.ls[3], margin_votes: r.ls[4], turnout_pct: r.ls[5],
     };
     const vs: CycleResult = {
-      winning_alliance: r.vs[0], winning_party: r.vs[1], candidate: r.vs[2],
+      winning_alliance: r.vs[0], winning_party: r.vs[1], candidate: cleanCandidate(r.vs[2]),
       vote_share_pct: r.vs[3], margin_votes: r.vs[4], turnout_pct: r.vs[5],
     };
+    const split = ls.winning_alliance !== vs.winning_alliance;
     return {
       ac_number: r.n, ac_name: r.name, parent_pc: r.pc, pc_slug: pcSlug(r.pc),
       col: colIdx, row: pcRow(r.pc),
       lok_sabha_2024: ls, vidhan_sabha_2024: vs,
       metrics: {
-        alliance_split_ticket: ls.winning_alliance !== vs.winning_alliance,
+        alliance_split_ticket: split,
         vote_share_swing_pct: +(vs.vote_share_pct - ls.vote_share_pct).toFixed(1),
         turnout_delta_pct: +(vs.turnout_pct - ls.turnout_pct).toFixed(1),
       },
@@ -205,15 +212,29 @@ export const ACS: AC[] = RAW.flatMap((row, rowIdx) =>
 );
 
 export function aggregateSeats(cycle: "ls" | "vs", acs: AC[] = ACS) {
-  const key = cycle === "ls" ? "lok_sabha_2024" : "vidhan_sabha_2024";
-  let mva = 0, mahayuti = 0;
-  for (const a of acs) {
-    if (a[key].winning_alliance === "MVA") mva++; else mahayuti++;
+  if (cycle === "ls") {
+    const slug = acs.length < ACS.length ? (acs[0]?.pc_slug ?? null) : null;
+    const pcs = filterPCs(slug);
+    const seats = aggregatePCSeats(pcs);
+    return { mva: seats.mva, mahayuti: seats.mahayuti, total: seats.total };
   }
-  return { mva, mahayuti };
+  let mva = 0;
+  let mahayuti = 0;
+  for (const a of acs) {
+    if (a.vidhan_sabha_2024.winning_alliance === "MVA") mva++;
+    else mahayuti++;
+  }
+  return { mva, mahayuti, total: acs.length };
 }
 
 export function filterByPC(slug: string | null): AC[] {
   if (!slug || slug === "all") return ACS;
-  return ACS.filter(a => a.pc_slug === slug);
+  return ACS.filter((a) => a.pc_slug === slug);
+}
+
+/** Unique PC slugs present in a filtered AC list (for LS seat aggregation). */
+export function pcSlugsFromACs(acs: AC[]): string | null {
+  if (acs.length === ACS.length) return null;
+  const slugs = new Set(acs.map((a) => a.pc_slug));
+  return slugs.size === 1 ? [...slugs][0]! : null;
 }

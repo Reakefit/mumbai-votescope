@@ -3,11 +3,11 @@ import { LayoutDashboard, Map, TrendingUp, Activity, Vote, Lightbulb } from "luc
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/", label: "Macro Storyline", icon: LayoutDashboard },
-  { to: "/mapping", label: "Comparative Mapping", icon: Map },
-  { to: "/swing", label: "Swing Engine", icon: TrendingUp },
-  { to: "/turnout", label: "Turnout Dynamics", icon: Activity },
-  { to: "/insights", label: "Outcome Insights", icon: Lightbulb },
+  { to: "/", label: "Overview", icon: LayoutDashboard },
+  { to: "/mapping", label: "Maps", icon: Map },
+  { to: "/swing", label: "Vote share", icon: TrendingUp },
+  { to: "/turnout", label: "Turnout", icon: Activity },
+  { to: "/analysis", label: "Analysis", icon: Lightbulb },
 ] as const;
 
 export function Sidebar() {
@@ -19,8 +19,8 @@ export function Sidebar() {
           <Vote className="h-4 w-4" />
         </div>
         <div className="leading-tight">
-          <div className="text-sm font-semibold tracking-tight">MumbAI-Vote</div>
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">2024 LS vs VS</div>
+          <div className="text-sm font-semibold tracking-tight">Mumbai 2024</div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Parliament vs State</div>
         </div>
       </div>
       <nav className="flex flex-col gap-0.5">
@@ -42,8 +42,10 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="mt-auto px-2 pt-4 text-[10px] uppercase tracking-wider text-muted-foreground">
-        Mock data · Illustrative
+      <div className="mt-auto px-2 pt-4 text-[10px] text-muted-foreground leading-relaxed">
+        Official results · ECI / IndiaVotes <br></br>
+        Built by Mouni Malyala
+        mouni221100@gmail.com
       </div>
     </aside>
   );
