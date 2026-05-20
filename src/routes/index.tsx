@@ -3,102 +3,121 @@ import { Shell } from "@/components/layout/shell";
 import { useState } from "react";
 import { MumbaiMap } from "@/components/map/mumbai-map";
 import { ACDetailSheet } from "@/components/map/ac-detail-sheet";
-import { aggregateSeats, filterByPC, type AC } from "@/data/constituencies";
-import { ALLIANCE_COLOR, fmtPct } from "@/lib/election-colors";
-import { useFilters } from "@/hooks/use-filters";
-import { motion, AnimatePresence } from "motion/react";
-import { ArrowRight, Sparkles, TrendingUp, Activity, Lightbulb, Map as MapIcon } from "lucide-react";
+import { ACS, aggregateSeats, type AC } from "@/data/constituencies";
+import { ALLIANCE_COLOR, fmtPct, fmtInt } from "@/lib/election-colors";
+import { motion } from "motion/react";
+import { ArrowRight, Sparkles, Activity, TrendingUp, Vote } from "lucide-react";
 import {
-  BarChart, Bar, ResponsiveContainer, Cell, XAxis, YAxis, ScatterChart, Scatter,
-  ReferenceLine, ZAxis, Tooltip as ReTooltip,
+  BarChart, Bar, ResponsiveContainer, Cell, XAxis, YAxis,
+  ScatterChart, Scatter, ZAxis, ReferenceLine,
 } from "recharts";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MumbAI-Vote · Mumbai 2024 LS vs VS Map" },
-      { name: "description", content: "Interactive Mumbai constituency map comparing 2024 Lok Sabha and Vidhan Sabha results — toggle elections, click any AC for the full breakdown." },
+      { title: "MumbAI-Vote · How Mumbai voted in 2024 — LS vs VS" },
+      { name: "description", content: "Mumbai's 2024 split-ticket story: same voters, two elections, different choices. Real Wikipedia-sourced results for all 36 ACs and 6 PCs." },
     ],
   }),
   component: Page,
 });
 
 function Page() {
-  const { pc } = useFilters();
-  const acs = filterByPC(pc);
+  const acs = ACS;
   const [cycle, setCycle] = useState<"ls" | "vs">("vs");
   const [selected, setSelected] = useState<AC | null>(null);
 
-  const ls = aggregateSeats("ls", acs);
-  const vs = aggregateSeats("vs", acs);
-  const splitCount = acs.filter(a => a.metrics.alliance_split_ticket).length;
-  const avgTurnout = acs.reduce((s, a) =>
-    s + (cycle === "ls" ? a.lok_sabha_2024.turnout_pct : a.vidhan_sabha_2024.turnout_pct), 0) / acs.length;
+  const ls = aggregateSeats("ls");
+  const vs = aggregateSeats("vs");
+  const split = acs.filter(a => a.metrics.alliance_split_ticket);
+  const avgLS = acs.reduce((s, a) => s + a.lok_sabha_2024.turnout_pct, 0) / acs.length;
+  const avgVS = acs.reduce((s, a) => s + a.vidhan_sabha_2024.turnout_pct, 0) / acs.length;
   const current = cycle === "ls" ? ls : vs;
 
   return (
     <Shell>
-      <div className="max-w-[1500px] mx-auto space-y-5">
-        {/* Hero: map + key metrics */}
-        <section className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5">
-          <div className="rounded-xl border border-border bg-card/40 p-4 lg:p-5 relative overflow-hidden">
+      <div className="max-w-[1400px] mx-auto">
+        {/* Hero — sticky map on desktop */}
+        <section className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 lg:items-start">
+          <div className="lg:sticky lg:top-4 rounded-xl border border-border bg-card/40 p-4 lg:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
               <div>
-                <h1 className="text-xl lg:text-2xl font-semibold tracking-tight">Mumbai · 2024</h1>
-                <p className="text-xs lg:text-sm text-muted-foreground">
-                  {acs.length} assembly constituencies · click any to deep-dive
+                <h1 className="text-xl lg:text-2xl font-semibold tracking-tight">
+                  Same voters. Two elections. <span className="text-primary">Different choice.</span>
+                </h1>
+                <p className="text-xs lg:text-sm text-muted-foreground mt-0.5">
+                  Mumbai · 36 ACs · 6 PCs · 2024 — toggle the election, click any constituency
                 </p>
               </div>
               <CycleToggle cycle={cycle} setCycle={setCycle} />
             </div>
-
-            <div className="relative h-[480px] sm:h-[560px] lg:h-[640px] w-full rounded-lg bg-background/60 overflow-hidden">
-              <MumbaiMap cycle={cycle} onSelect={setSelected} highlightPC={pc} />
+            <div className="relative h-[460px] lg:h-[600px] w-full rounded-lg bg-background/60 overflow-hidden">
+              <MumbaiMap cycle={cycle} onSelect={setSelected} />
               <div className="absolute bottom-3 left-3 rounded-md border border-border bg-background/85 backdrop-blur px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground pointer-events-none">
                 {cycle === "ls" ? "Lok Sabha · Apr–Jun 2024" : "Vidhan Sabha · Nov 2024"} · winning alliance
               </div>
+              <Legend />
             </div>
           </div>
 
-          {/* Key metrics column */}
+          {/* Key identifiers column */}
           <div className="space-y-3">
             <BigScore cycle={cycle} mahayuti={current.mahayuti} mva={current.mva} total={acs.length} />
-            <FlipDelta ls={ls} vs={vs} />
-            <KeyStat icon={Sparkles} label="Split-ticket ACs" value={`${splitCount} of ${acs.length}`}
-              hint="Voted differently in LS vs VS" link="/insights#split" />
-            <KeyStat icon={Activity} label={cycle === "ls" ? "LS avg turnout" : "VS avg turnout"} value={`${avgTurnout.toFixed(1)}%`}
-              hint="Engagement across selected region" link="/turnout" />
+            <Identifier icon={Sparkles} value={`${split.length}`} unit={`/ ${acs.length} ACs`}
+              label="Split-ticket constituencies"
+              hint="Won by different alliances in LS vs VS"
+              accent />
+            <Identifier icon={TrendingUp} value={`${vs.mahayuti - ls.mahayuti > 0 ? "+" : ""}${vs.mahayuti - ls.mahayuti}`} unit="seats"
+              label="LS → VS shift to Mahayuti"
+              hint={`Mahayuti went ${ls.mahayuti} → ${vs.mahayuti} of ${acs.length}`} />
+            <Identifier icon={Activity} value={`${(avgVS - avgLS).toFixed(1)}%`} unit="pts"
+              label="Turnout gap (VS − LS)"
+              hint={`LS ${avgLS.toFixed(1)}% → VS ${avgVS.toFixed(1)}% average`} />
           </div>
         </section>
 
-        {/* Top movers strip */}
-        <TopMovers acs={acs} onSelect={setSelected} />
+        {/* Scrollable story */}
+        <div className="mt-10 lg:mt-14 space-y-10 lg:space-y-14">
+          <Story
+            kicker="Chapter 1"
+            title="The headline flip"
+            subtitle="Mumbai's voters split the ticket — backing the INDIA bloc in May, then handing the city to Mahayuti in November."
+            narrative="Narrative coming soon — once we finalize the AC-level Wikipedia merge, this section will walk through the macro flip seat-by-seat."
+            link={{ to: "/mapping", label: "Open side-by-side map" }}
+          >
+            <FlipStrip ls={ls} vs={vs} total={acs.length} />
+          </Story>
 
-        {/* Deep dive cards */}
-        <section>
-          <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-sm font-semibold tracking-tight">Deep dive</h2>
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Click a card to explore</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-            <DeepDiveCard to="/swing" icon={TrendingUp} title="Swing Engine"
-              blurb="Margin collapses and party dilution across all 36 ACs.">
-              <SwingPreview acs={acs} />
-            </DeepDiveCard>
-            <DeepDiveCard to="/turnout" icon={Activity} title="Turnout Dynamics"
-              blurb="Voter fatigue heatmap and 4-quadrant battleground classifier.">
-              <TurnoutPreview acs={acs} />
-            </DeepDiveCard>
-            <DeepDiveCard to="/insights" icon={Lightbulb} title="Outcome Insights"
-              blurb="Seven lenses on what changed — parties, demographics, geography.">
-              <InsightsPreview acs={acs} />
-            </DeepDiveCard>
-            <DeepDiveCard to="/mapping" icon={MapIcon} title="Side-by-Side Map"
-              blurb="Compare both cycles simultaneously with synchronized hover.">
-              <MapPreview />
-            </DeepDiveCard>
-          </div>
-        </section>
+          <Story
+            kicker="Chapter 2"
+            title="Where voters changed their mind"
+            subtitle={`${split.length} of ${acs.length} assembly seats backed one alliance for Parliament and the other for the Assembly.`}
+            narrative="Narrative TBD — short profiles of each split-ticket AC will go here."
+            link={{ to: "/insights", label: "See every split-ticket AC" }}
+          >
+            <SplitGrid split={split} onSelect={setSelected} />
+          </Story>
+
+          <Story
+            kicker="Chapter 3"
+            title="Margin storm — the biggest swings"
+            subtitle="Vote-share movements between LS and VS, ranked. Big bars mean the local race looked very different from the national one."
+            narrative="Narrative TBD — we'll annotate the top movers with what likely drove them."
+            link={{ to: "/swing", label: "Open the Swing Engine" }}
+          >
+            <SwingBars acs={acs} onSelect={setSelected} />
+          </Story>
+
+          <Story
+            kicker="Chapter 4"
+            title="Turnout asymmetry"
+            subtitle={`Mumbai voters showed up differently in May vs November — LS ${avgLS.toFixed(1)}% vs VS ${avgVS.toFixed(1)}%.`}
+            narrative="Narrative TBD — district-level turnout overlay and demographic correlation."
+            link={{ to: "/turnout", label: "Open Turnout Dynamics" }}
+          >
+            <TurnoutScatter acs={acs} />
+          </Story>
+        </div>
       </div>
 
       <ACDetailSheet ac={selected} onClose={() => setSelected(null)} />
@@ -106,60 +125,55 @@ function Page() {
   );
 }
 
-/* ---------- toggle ---------- */
+/* ---------- header components ---------- */
 function CycleToggle({ cycle, setCycle }: { cycle: "ls" | "vs"; setCycle: (c: "ls" | "vs") => void }) {
   return (
     <div className="relative inline-flex items-center rounded-full border border-border bg-background p-1 text-xs">
-      <button
-        onClick={() => setCycle("ls")}
+      <button onClick={() => setCycle("ls")}
         className={`relative z-10 px-3 py-1.5 font-medium transition-colors ${cycle === "ls" ? "text-primary-foreground" : "text-muted-foreground"}`}>
         Lok Sabha
       </button>
-      <button
-        onClick={() => setCycle("vs")}
+      <button onClick={() => setCycle("vs")}
         className={`relative z-10 px-3 py-1.5 font-medium transition-colors ${cycle === "vs" ? "text-primary-foreground" : "text-muted-foreground"}`}>
         Vidhan Sabha
       </button>
-      <motion.div
-        layout
-        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+      <motion.div layout transition={{ type: "spring", stiffness: 380, damping: 30 }}
         className="absolute inset-y-1 rounded-full bg-primary"
-        style={{
-          width: "calc(50% - 4px)",
-          left: cycle === "ls" ? 4 : "calc(50% + 0px)",
-        }}
-      />
+        style={{ width: "calc(50% - 4px)", left: cycle === "ls" ? 4 : "calc(50% + 0px)" }} />
     </div>
   );
 }
 
-/* ---------- big score ---------- */
-function BigScore({ cycle, mahayuti, mva, total }:
-  { cycle: "ls" | "vs"; mahayuti: number; mva: number; total: number }) {
-  const winner = mahayuti > mva ? "Mahayuti" : "MVA";
+function Legend() {
+  return (
+    <div className="absolute top-3 right-3 rounded-md border border-border bg-background/85 backdrop-blur px-2.5 py-1.5 text-[10px] flex gap-3">
+      <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: "var(--mahayuti)" }} />Mahayuti</span>
+      <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: "var(--mva)" }} />MVA</span>
+    </div>
+  );
+}
+
+function BigScore({ cycle, mahayuti, mva, total }: { cycle: "ls" | "vs"; mahayuti: number; mva: number; total: number }) {
+  const winner = mahayuti >= mva ? "Mahayuti" : "MVA";
   const winnerCount = Math.max(mahayuti, mva);
   return (
     <div className="rounded-xl border border-border bg-card/40 p-4">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-        {cycle === "ls" ? "Lok Sabha 2024 — AC segments won" : "Vidhan Sabha 2024 — seats won"}
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+        <Vote className="h-3 w-3" /> {cycle === "ls" ? "Lok Sabha · AC segments won" : "Vidhan Sabha · seats won"}
       </div>
       <div className="mt-1 flex items-baseline gap-2">
-        <motion.div key={`${cycle}-${winner}`}
-          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-semibold num" style={{ color: ALLIANCE_COLOR[winner] }}>
-          {winnerCount}
-        </motion.div>
+        <motion.div key={`${cycle}-${winner}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+          className="text-4xl font-semibold num" style={{ color: ALLIANCE_COLOR[winner] }}>{winnerCount}</motion.div>
         <div className="text-sm text-muted-foreground num">/ {total}</div>
-        <div className="ml-auto text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full"
-          style={{ background: `color-mix(in oklab, ${ALLIANCE_COLOR[winner]} 25%, transparent)`,
-                   color: ALLIANCE_COLOR[winner] }}>
+        <div className="ml-auto text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full"
+          style={{ background: `color-mix(in oklab, ${ALLIANCE_COLOR[winner]} 25%, transparent)`, color: ALLIANCE_COLOR[winner] }}>
           {winner} ▲
         </div>
       </div>
       <div className="mt-3 h-2 w-full rounded-full overflow-hidden bg-muted flex">
-        <motion.div layout initial={false} animate={{ width: `${(mahayuti / total) * 100}%` }}
+        <motion.div layout animate={{ width: `${(mahayuti / total) * 100}%` }}
           style={{ background: "var(--mahayuti)" }} transition={{ type: "spring", stiffness: 200, damping: 30 }} />
-        <motion.div layout initial={false} animate={{ width: `${(mva / total) * 100}%` }}
+        <motion.div layout animate={{ width: `${(mva / total) * 100}%` }}
           style={{ background: "var(--mva)" }} transition={{ type: "spring", stiffness: 200, damping: 30 }} />
       </div>
       <div className="mt-2 flex justify-between text-[11px] num">
@@ -170,163 +184,128 @@ function BigScore({ cycle, mahayuti, mva, total }:
   );
 }
 
-function FlipDelta({ ls, vs }: { ls: { mahayuti: number; mva: number }; vs: { mahayuti: number; mva: number } }) {
-  const delta = vs.mahayuti - ls.mahayuti;
+function Identifier({ icon: Icon, value, unit, label, hint, accent }:
+  { icon: any; value: string; unit: string; label: string; hint: string; accent?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-card/40 p-4">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">LS → VS shift</div>
-      <div className="mt-1 flex items-baseline gap-3">
-        <div className="text-3xl font-semibold num text-primary">
-          {delta > 0 ? "+" : ""}{delta}
-        </div>
-        <div className="text-xs text-muted-foreground">seats moved to Mahayuti</div>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <Icon className="h-3 w-3" /> {label}
       </div>
-      <div className="mt-3 flex items-center gap-2 text-[11px]">
-        <Pill alliance="MVA">LS·{ls.mva} → VS·{vs.mva}</Pill>
-        <ArrowRight className="h-3 w-3 text-muted-foreground" />
-        <Pill alliance="Mahayuti">LS·{ls.mahayuti} → VS·{vs.mahayuti}</Pill>
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <div className={`text-3xl font-semibold num ${accent ? "text-primary" : ""}`}>{value}</div>
+        <div className="text-xs text-muted-foreground">{unit}</div>
       </div>
+      <div className="text-[11px] text-muted-foreground mt-1">{hint}</div>
     </div>
   );
 }
 
-function KeyStat({ icon: Icon, label, value, hint, link }:
-  { icon: any; label: string; value: string; hint: string; link: string }) {
+/* ---------- story scaffold ---------- */
+function Story({ kicker, title, subtitle, narrative, link, children }:
+  { kicker: string; title: string; subtitle: string; narrative: string;
+    link: { to: string; label: string }; children: React.ReactNode }) {
   return (
-    <Link to={link} className="block rounded-xl border border-border bg-card/40 p-4 hover:bg-card/70 hover:border-primary/50 transition-colors group">
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" /> {label}
+    <section className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-5 lg:gap-8">
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.2em] text-primary mb-2">{kicker}</div>
+        <h2 className="text-lg lg:text-xl font-semibold tracking-tight leading-snug">{title}</h2>
+        <p className="text-sm text-muted-foreground mt-2">{subtitle}</p>
+        <p className="text-xs text-muted-foreground/70 italic mt-3 border-l-2 border-border pl-3">{narrative}</p>
+        <Link to={link.to} className="inline-flex items-center gap-1 mt-4 text-xs text-primary hover:underline">
+          {link.label} <ArrowRight className="h-3 w-3" />
+        </Link>
       </div>
-      <div className="mt-1 flex items-baseline justify-between gap-2">
-        <div className="text-2xl font-semibold num">{value}</div>
-        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition" />
-      </div>
-      <div className="text-[11px] text-muted-foreground mt-0.5">{hint}</div>
-    </Link>
-  );
-}
-
-function Pill({ alliance, children }: { alliance: "MVA" | "Mahayuti"; children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium num"
-      style={{ background: `color-mix(in oklab, ${ALLIANCE_COLOR[alliance]} 25%, transparent)`,
-               color: ALLIANCE_COLOR[alliance] }}>
-      {children}
-    </span>
-  );
-}
-
-/* ---------- top movers ---------- */
-function TopMovers({ acs, onSelect }: { acs: AC[]; onSelect: (ac: AC) => void }) {
-  const movers = [...acs]
-    .sort((a, b) => Math.abs(b.metrics.vote_share_swing_pct) - Math.abs(a.metrics.vote_share_swing_pct))
-    .slice(0, 6);
-  return (
-    <section className="rounded-xl border border-border bg-card/40 p-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <h2 className="text-sm font-semibold tracking-tight">Biggest movers — click to inspect</h2>
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">By absolute vote-share swing</span>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
-        {movers.map(a => (
-          <button key={a.ac_number} onClick={() => onSelect(a)}
-            className="text-left rounded-md border border-border bg-background/60 px-3 py-2.5 hover:border-primary/60 hover:bg-background transition-colors">
-            <div className="text-xs font-medium truncate">{a.ac_name}</div>
-            <div className="text-[10px] text-muted-foreground mb-1.5 truncate">{a.parent_pc}</div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-sm" style={{ background: ALLIANCE_COLOR[a.lok_sabha_2024.winning_alliance] }} />
-              <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
-              <span className="h-1.5 w-1.5 rounded-sm" style={{ background: ALLIANCE_COLOR[a.vidhan_sabha_2024.winning_alliance] }} />
-              <span className="ml-auto text-xs num text-primary">{fmtPct(a.metrics.vote_share_swing_pct, true)}</span>
-            </div>
-          </button>
-        ))}
-      </div>
+      <div className="rounded-xl border border-border bg-card/40 p-4">{children}</div>
     </section>
   );
 }
 
-/* ---------- deep dive cards ---------- */
-function DeepDiveCard({ to, icon: Icon, title, blurb, children }:
-  { to: string; icon: any; title: string; blurb: string; children: React.ReactNode }) {
+/* ---------- chapter visuals ---------- */
+function FlipStrip({ ls, vs, total }: { ls: { mahayuti: number; mva: number }; vs: { mahayuti: number; mva: number }; total: number }) {
   return (
-    <Link to={to} className="block rounded-xl border border-border bg-card/40 p-4 hover:bg-card/70 hover:border-primary/40 transition-colors group">
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-        <Icon className="h-3.5 w-3.5" /> {title}
+    <div className="space-y-3">
+      <ScoreBar label="Lok Sabha 2024" mahayuti={ls.mahayuti} mva={ls.mva} total={total} />
+      <ScoreBar label="Vidhan Sabha 2024" mahayuti={vs.mahayuti} mva={vs.mva} total={total} />
+      <div className="text-[11px] text-muted-foreground pt-1">
+        Same electorate, six months apart. Mahayuti gained <span className="text-primary num font-semibold">{vs.mahayuti - ls.mahayuti}</span> AC seats between the two cycles.
       </div>
-      <div className="text-xs text-muted-foreground mb-3">{blurb}</div>
-      <div className="h-24 -mx-1">{children}</div>
-      <div className="mt-2 flex items-center text-[11px] text-muted-foreground group-hover:text-primary transition-colors">
-        Explore <ArrowRight className="h-3 w-3 ml-1 group-hover:translate-x-0.5 transition" />
+    </div>
+  );
+}
+function ScoreBar({ label, mahayuti, mva, total }: { label: string; mahayuti: number; mva: number; total: number }) {
+  return (
+    <div>
+      <div className="flex justify-between text-[11px] mb-1.5">
+        <span className="text-muted-foreground uppercase tracking-wider">{label}</span>
+        <span className="num"><span style={{ color: "var(--mahayuti)" }}>{mahayuti}</span> · <span style={{ color: "var(--mva)" }}>{mva}</span></span>
       </div>
-    </Link>
+      <div className="h-3 w-full rounded-full overflow-hidden bg-muted flex">
+        <div style={{ width: `${(mahayuti / total) * 100}%`, background: "var(--mahayuti)" }} />
+        <div style={{ width: `${(mva / total) * 100}%`, background: "var(--mva)" }} />
+      </div>
+    </div>
   );
 }
 
-function SwingPreview({ acs }: { acs: AC[] }) {
-  const data = acs.map(a => ({ s: a.metrics.vote_share_swing_pct, c: a.vidhan_sabha_2024.winning_alliance }));
+function SplitGrid({ split, onSelect }: { split: AC[]; onSelect: (ac: AC) => void }) {
+  if (!split.length) return <div className="text-xs text-muted-foreground">No split-ticket ACs in this region.</div>;
   return (
-    <ResponsiveContainer>
-      <BarChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
-        <XAxis hide /><YAxis hide />
-        <Bar dataKey="s" radius={[2, 2, 0, 0]}>
-          {data.map((d, i) => <Cell key={i} fill={d.c === "Mahayuti" ? "var(--mahayuti)" : "var(--mva)"} />)}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
-function TurnoutPreview({ acs }: { acs: AC[] }) {
-  const data = acs.map(a => ({ x: a.lok_sabha_2024.turnout_pct, y: a.vidhan_sabha_2024.turnout_pct,
-    c: a.vidhan_sabha_2024.winning_alliance }));
-  return (
-    <ResponsiveContainer>
-      <ScatterChart margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-        <XAxis hide type="number" dataKey="x" domain={[47, 55]} />
-        <YAxis hide type="number" dataKey="y" domain={[47, 55]} />
-        <ZAxis range={[20, 20]} />
-        <ReferenceLine segment={[{ x: 47, y: 47 }, { x: 55, y: 55 }]} stroke="oklch(1 0 0 / 0.2)" strokeDasharray="2 2" />
-        <Scatter data={data}>
-          {data.map((d, i) => <Cell key={i} fill={d.c === "Mahayuti" ? "var(--mahayuti)" : "var(--mva)"} />)}
-        </Scatter>
-      </ScatterChart>
-    </ResponsiveContainer>
-  );
-}
-function InsightsPreview({ acs }: { acs: AC[] }) {
-  const split = acs.filter(a => a.metrics.alliance_split_ticket).length;
-  const held = acs.length - split;
-  const data = [{ name: "x", held, split }];
-  return (
-    <div className="flex h-full items-center justify-center gap-3">
-      <Donut value={split} total={acs.length} color="var(--mahayuti)" />
-      <div className="text-[11px] text-muted-foreground leading-tight">
-        <div className="text-foreground num text-base">{split}</div>
-        of <span className="num">{acs.length}</span> ACs<br />
-        flipped alliance
-      </div>
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+      {split.map(a => (
+        <button key={a.ac_number} onClick={() => onSelect(a)}
+          className="text-left rounded-md border border-border bg-background/60 px-3 py-2.5 hover:border-primary/60 hover:bg-background transition-colors">
+          <div className="text-xs font-medium truncate">{a.ac_name}</div>
+          <div className="text-[10px] text-muted-foreground mb-1.5 truncate">{a.parent_pc}</div>
+          <div className="flex items-center gap-1.5 text-[10px]">
+            <span className="px-1.5 py-0.5 rounded-sm font-medium" style={{ background: `color-mix(in oklab, ${ALLIANCE_COLOR[a.lok_sabha_2024.winning_alliance]} 30%, transparent)`, color: ALLIANCE_COLOR[a.lok_sabha_2024.winning_alliance] }}>{a.lok_sabha_2024.winning_party}</span>
+            <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
+            <span className="px-1.5 py-0.5 rounded-sm font-medium" style={{ background: `color-mix(in oklab, ${ALLIANCE_COLOR[a.vidhan_sabha_2024.winning_alliance]} 30%, transparent)`, color: ALLIANCE_COLOR[a.vidhan_sabha_2024.winning_alliance] }}>{a.vidhan_sabha_2024.winning_party}</span>
+          </div>
+        </button>
+      ))}
     </div>
   );
 }
-function Donut({ value, total, color }: { value: number; total: number; color: string }) {
-  const r = 28, c = 2 * Math.PI * r;
-  const pct = value / total;
+
+function SwingBars({ acs, onSelect }: { acs: AC[]; onSelect: (ac: AC) => void }) {
+  const sorted = [...acs].sort((a, b) => Math.abs(b.metrics.vote_share_swing_pct) - Math.abs(a.metrics.vote_share_swing_pct)).slice(0, 12);
+  const data = sorted.map(a => ({ name: a.ac_name, swing: a.metrics.vote_share_swing_pct, ac: a }));
   return (
-    <svg width="72" height="72" viewBox="0 0 72 72">
-      <circle cx="36" cy="36" r={r} fill="none" stroke="oklch(1 0 0 / 0.08)" strokeWidth="8" />
-      <circle cx="36" cy="36" r={r} fill="none" stroke={color} strokeWidth="8"
-        strokeDasharray={`${c * pct} ${c}`} strokeLinecap="round" transform="rotate(-90 36 36)" />
-      <text x="36" y="40" textAnchor="middle" fontSize="14" fontWeight="600" className="fill-foreground num">
-        {Math.round(pct * 100)}%
-      </text>
-    </svg>
-  );
-}
-function MapPreview() {
-  return (
-    <div className="grid grid-cols-2 gap-1 h-full">
-      <div className="rounded bg-gradient-to-br" style={{ background: "linear-gradient(135deg, var(--mva) 0%, var(--mva) 60%, var(--mahayuti) 100%)", opacity: 0.85 }} />
-      <div className="rounded" style={{ background: "linear-gradient(135deg, var(--mahayuti) 0%, var(--mahayuti) 70%, var(--mva) 100%)", opacity: 0.85 }} />
+    <div className="h-[320px]">
+      <ResponsiveContainer>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 80 }}>
+          <XAxis type="number" hide />
+          <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10, fill: "oklch(0.7 0 0)" }} axisLine={false} tickLine={false} />
+          <ReferenceLine x={0} stroke="oklch(1 0 0 / 0.2)" />
+          <Bar dataKey="swing" radius={[0, 3, 3, 0]} onClick={(d: any) => d.ac && onSelect(d.ac)} cursor="pointer">
+            {data.map((d, i) => <Cell key={i} fill={d.swing >= 0 ? "var(--mahayuti)" : "var(--mva)"} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <div className="text-[10px] text-muted-foreground text-center mt-1">Vote-share swing LS → VS (percentage points) · click a bar to inspect</div>
     </div>
   );
 }
+
+function TurnoutScatter({ acs }: { acs: AC[] }) {
+  const data = acs.map(a => ({ x: a.lok_sabha_2024.turnout_pct, y: a.vidhan_sabha_2024.turnout_pct, c: a.vidhan_sabha_2024.winning_alliance, name: a.ac_name }));
+  return (
+    <div className="h-[280px]">
+      <ResponsiveContainer>
+        <ScatterChart margin={{ top: 8, right: 16, bottom: 24, left: 32 }}>
+          <XAxis type="number" dataKey="x" name="LS turnout" domain={[48, 60]} tick={{ fontSize: 10, fill: "oklch(0.6 0 0)" }} label={{ value: "Lok Sabha turnout %", position: "insideBottom", offset: -8, fontSize: 10, fill: "oklch(0.6 0 0)" }} />
+          <YAxis type="number" dataKey="y" name="VS turnout" domain={[50, 60]} tick={{ fontSize: 10, fill: "oklch(0.6 0 0)" }} label={{ value: "Vidhan Sabha turnout %", angle: -90, position: "insideLeft", fontSize: 10, fill: "oklch(0.6 0 0)" }} />
+          <ZAxis range={[60, 60]} />
+          <ReferenceLine segment={[{ x: 48, y: 48 }, { x: 60, y: 60 }]} stroke="oklch(1 0 0 / 0.18)" strokeDasharray="3 3" />
+          <Scatter data={data}>
+            {data.map((d, i) => <Cell key={i} fill={d.c === "Mahayuti" ? "var(--mahayuti)" : "var(--mva)"} fillOpacity={0.8} />)}
+          </Scatter>
+        </ScatterChart>
+      </ResponsiveContainer>
+      <div className="text-[10px] text-muted-foreground text-center">Each dot = one AC. Diagonal = equal turnout in both elections.</div>
+    </div>
+  );
+}
+
+// keep fmtInt imported to silence unused warning if needed
+void fmtInt; void fmtPct;
