@@ -1,15 +1,15 @@
-import mapData from "@/data/mumbai-svg.json";
+import { MUMBAI_MAP } from "@/data/mumbai-svg";
 import { ACS, type AC } from "@/data/constituencies";
 import { ALLIANCE_COLOR } from "@/lib/election-colors";
 import { useState, useMemo } from "react";
 
 type Cycle = "ls" | "vs";
 
-const FEATURES = (mapData as any).features as Array<{
+const FEATURES = MUMBAI_MAP.features as readonly {
   ac_no: number; ac_name: string; path: string; cx: number; cy: number;
-}>;
-const MAP_W = (mapData as any).width as number;
-const MAP_H = (mapData as any).height as number;
+}[];
+const MAP_W = MUMBAI_MAP.width;
+const MAP_H = MUMBAI_MAP.height;
 
 interface Props {
   cycle: Cycle;
