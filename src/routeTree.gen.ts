@@ -9,8 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TurnoutRouteImport } from './routes/turnout'
+import { Route as SwingRouteImport } from './routes/swing'
+import { Route as MappingRouteImport } from './routes/mapping'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TurnoutRoute = TurnoutRouteImport.update({
+  id: '/turnout',
+  path: '/turnout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SwingRoute = SwingRouteImport.update({
+  id: '/swing',
+  path: '/swing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MappingRoute = MappingRouteImport.update({
+  id: '/mapping',
+  path: '/mapping',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +37,61 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/mapping': typeof MappingRoute
+  '/swing': typeof SwingRoute
+  '/turnout': typeof TurnoutRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mapping': typeof MappingRoute
+  '/swing': typeof SwingRoute
+  '/turnout': typeof TurnoutRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/mapping': typeof MappingRoute
+  '/swing': typeof SwingRoute
+  '/turnout': typeof TurnoutRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/mapping' | '/swing' | '/turnout'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/mapping' | '/swing' | '/turnout'
+  id: '__root__' | '/' | '/mapping' | '/swing' | '/turnout'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MappingRoute: typeof MappingRoute
+  SwingRoute: typeof SwingRoute
+  TurnoutRoute: typeof TurnoutRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/turnout': {
+      id: '/turnout'
+      path: '/turnout'
+      fullPath: '/turnout'
+      preLoaderRoute: typeof TurnoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/swing': {
+      id: '/swing'
+      path: '/swing'
+      fullPath: '/swing'
+      preLoaderRoute: typeof SwingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mapping': {
+      id: '/mapping'
+      path: '/mapping'
+      fullPath: '/mapping'
+      preLoaderRoute: typeof MappingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,7 +104,20 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MappingRoute: MappingRoute,
+  SwingRoute: SwingRoute,
+  TurnoutRoute: TurnoutRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
