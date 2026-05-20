@@ -53,14 +53,8 @@ function Page() {
             </div>
 
             <div className="relative h-[480px] sm:h-[560px] lg:h-[640px] w-full rounded-lg bg-background/60 overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div key={cycle}
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  transition={{ duration: 0.25 }} className="absolute inset-0">
-                  <MumbaiMap cycle={cycle} onSelect={setSelected} highlightPC={pc} />
-                </motion.div>
-              </AnimatePresence>
-              <div className="absolute bottom-3 left-3 rounded-md border border-border bg-background/85 backdrop-blur px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <MumbaiMap cycle={cycle} onSelect={setSelected} highlightPC={pc} />
+              <div className="absolute bottom-3 left-3 rounded-md border border-border bg-background/85 backdrop-blur px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground pointer-events-none">
                 {cycle === "ls" ? "Lok Sabha · Apr–Jun 2024" : "Vidhan Sabha · Nov 2024"} · winning alliance
               </div>
             </div>
