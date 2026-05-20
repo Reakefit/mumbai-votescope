@@ -3,13 +3,14 @@ import { useFilters, type MetricKey } from "@/hooks/use-filters";
 import { PC_LIST } from "@/data/constituencies";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Map, TrendingUp, Activity } from "lucide-react";
+import { LayoutDashboard, Map, TrendingUp, Activity, Lightbulb } from "lucide-react";
 
 const TABS = [
   { to: "/", label: "Macro", icon: LayoutDashboard },
   { to: "/mapping", label: "Map", icon: Map },
   { to: "/swing", label: "Swing", icon: TrendingUp },
   { to: "/turnout", label: "Turnout", icon: Activity },
+  { to: "/insights", label: "Insights", icon: Lightbulb },
 ];
 
 export function TopBar() {

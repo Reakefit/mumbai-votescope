@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Map, TrendingUp, Activity, Vote } from "lucide-react";
+import { LayoutDashboard, Map, TrendingUp, Activity, Vote, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -7,6 +7,7 @@ const NAV = [
   { to: "/mapping", label: "Comparative Mapping", icon: Map },
   { to: "/swing", label: "Swing Engine", icon: TrendingUp },
   { to: "/turnout", label: "Turnout Dynamics", icon: Activity },
+  { to: "/insights", label: "Outcome Insights", icon: Lightbulb },
 ] as const;
 
 export function Sidebar() {
