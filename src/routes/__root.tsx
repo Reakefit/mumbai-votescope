@@ -74,10 +74,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Mumbai 2024 · Parliament vs State Assembly" },
       { name: "description", content: "How Mumbai voted in Lok Sabha and Vidhan Sabha 2024." },
-      { property: "og:title", content: "Mumbai Vote Brief · 2024" },
-      { property: "og:description", content: "How Mumbai voted differently in Parliament and State elections 2024." },
+      { property: "og:title", content: "Mumbai 2024 · Parliament vs State Assembly" },
+      { property: "og:description", content: "How Mumbai voted in Lok Sabha and Vidhan Sabha 2024." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Mumbai 2024 · Parliament vs State Assembly" },
+      { name: "twitter:description", content: "How Mumbai voted in Lok Sabha and Vidhan Sabha 2024." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/67561a4b-dc99-4e9d-82a1-b5ac2544daba/id-preview-cdd6384a--885f8939-a40d-46bd-8fd7-47957a8f9e75.lovable.app-1779281160843.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/67561a4b-dc99-4e9d-82a1-b5ac2544daba/id-preview-cdd6384a--885f8939-a40d-46bd-8fd7-47957a8f9e75.lovable.app-1779281160843.png" },
     ],
     links: [
       {
