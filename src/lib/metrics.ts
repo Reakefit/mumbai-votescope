@@ -1,13 +1,17 @@
 import type { AC } from "@/data/constituencies";
-import { lsAllianceForAC } from "@/data/pc-results";
+import { lsAllianceForACBest } from "@/lib/divergence";
 
 export function avg(nums: number[]) {
   return nums.reduce((s, x) => s + x, 0) / (nums.length || 1);
 }
 
-/** True when the parent PC's LS alliance differs from this AC's VS winner. */
+/**
+ * True when the parent PC's LS alliance (or AC-segment lead if available)
+ * differs from this AC's VS winner. This is "alliance divergence" — true
+ * split-ticket requires AC-segment Form 20 data, which we tag separately.
+ */
 export function isSplitTicket(ac: AC): boolean {
-  return lsAllianceForAC(ac.pc_slug) !== ac.vidhan_sabha_2024.winning_alliance;
+  return lsAllianceForACBest(ac).alliance !== ac.vidhan_sabha_2024.winning_alliance;
 }
 
 export function splitTicketACs(acs: AC[]): AC[] {

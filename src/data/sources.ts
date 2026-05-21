@@ -14,7 +14,14 @@ export const DATA_SOURCES = {
       "https://results.eci.gov.in/AcResultGenNov2024/partywise-S13.htm",
       "https://www.indiavotes.com/vidhan-sabha/2024/maharashtra/300/30",
     ],
-    note: "All 36 Mumbai ACs: winner, vote share, margin. Turnout uses district averages (Mumbai City 52.65%, Suburban 56.39%) as AC proxy.",
+    note: "All 36 Mumbai ACs: winner, vote share, margin. Turnout uses district averages (Mumbai City 52.65%, Suburban 56.39%) as an AC-level proxy — not a per-AC participation rate.",
+  },
+  form20PartII: {
+    label: "AC-segment LS leads (Form 20 Part II)",
+    urls: [
+      "https://ceoelection.maharashtra.gov.in/ceo/Form20-Part-II.aspx",
+    ],
+    note: "Authoritative AC-segment-level Lok Sabha tallies are in CEO Maharashtra's Form 20 Part II PDFs. Not yet integrated into the app — May figures on each AC tile currently repeat the parent PC winner.",
   },
 } as const;
 
