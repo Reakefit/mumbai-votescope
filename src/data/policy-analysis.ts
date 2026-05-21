@@ -57,7 +57,7 @@ export const EXECUTIVE_SUMMARY: AnalysisBlock[] = [
 export const FRAMEWORK: AnalysisBlock[] = [
   {
     type: "p",
-    text: "National elections ask voters to judge the Union government, alliance stability, and high-profile splits. State elections ask who will run Maharashtra and who will handle ward-level issues: water, roads, slum rehabilitation, local permits, and housing society disputes. Mumbai's 2024 pair is a clean natural experiment because the same electorate voted twice within six months.",
+    text: "National elections ask voters to judge the Union government, alliance stability, and high-profile splits. State elections ask who will run Maharashtra and who will handle ward-level issues: water, roads, slum rehabilitation, local permits, and housing society disputes. Mumbai's 2024 pair is a useful natural comparison — the same electorate voted twice within six months — but not a controlled experiment. Candidate line-ups, alliance salience, turnout drivers, campaign issues, welfare schemes, and the office being filled all changed between May and November.",
   },
   {
     type: "h3",
@@ -66,10 +66,10 @@ export const FRAMEWORK: AnalysisBlock[] = [
   {
     type: "ul",
     items: [
-      "May (Lok Sabha): colour on each assembly tile follows the MP winner for that parliamentary seat (6 results city-wide). It does not mean that assembly segment had its own separate parliamentary count.",
+      "May (Lok Sabha): colour on each assembly tile follows the MP winner for the parliamentary seat covering it (6 results city-wide). It does NOT mean that assembly segment was counted separately; AC-segment Form 20 leads are not yet integrated.",
       "November (Vidhan Sabha): colour follows the MLA winner for each of the 36 assembly constituencies.",
-      "Split-ticket: an area where the May parliamentary alliance and the November assembly winner differ.",
-      "Swing in charts: change in the winning side's vote share between elections in this dataset (not a classic BJP-minus-Congress swing).",
+      "PC-to-AC alliance divergence: an AC where the parent Lok Sabha winner and the November assembly winner are different alliances. We use this term instead of 'split-ticket' because the May value here is the PC winner, not an AC-segment count.",
+      "Winner-share difference: November-winner share minus May-winner share on the same tile (dataset metric). It is NOT a classic swing — the two numbers can belong to different parties.",
     ],
   },
   {
@@ -320,7 +320,7 @@ export const PARTY_CAMPAIGNS: AnalysisBlock[] = [
 export const SPLIT_TICKET_DEEP: AnalysisBlock[] = [
   {
     type: "p",
-    text: "Split-ticket voting means choosing one alliance for Parliament and another for the State Assembly. In this app, an area is split when the May parliamentary alliance for its parent PC differs from the November assembly winner for that AC. The dataset shows 18 such areas out of 36, with 15 moving from MVA (May) to Mahayuti (November) and 3 moving the opposite way, mostly in the west.",
+    text: "True split-ticket voting means the same local electorate chose one alliance for Parliament and another for the State Assembly. To prove that we would need AC-segment Lok Sabha leads from ECI Form 20 Part II. Until those are integrated, what this app actually shows is PC-to-AC alliance divergence: the Lok Sabha seat covering an AC was won by one alliance, and that AC's assembly seat was won by the other. The divergence count is rendered live from the dataset in every chart on the site, so it cannot drift between sections.",
   },
   {
     type: "h3",
@@ -329,9 +329,9 @@ export const SPLIT_TICKET_DEEP: AnalysisBlock[] = [
   {
     type: "ul",
     items: [
-      "Proven: different alliance winners across the two elections in 18 ACs; seat totals 4/6 MPs MVA vs 22/36 MLAs Mahayuti.",
-      "Suggested by media: voters treated Lok Sabha as national referendum on splits; assembly as local delivery contest.",
-      "Not proven here: individual voter intent, exit polls, or booth-level transfer rates (not in dataset).",
+      "High confidence: assembly seat outcomes (ECI counts) and the city-wide totals 4/6 MPs MVA vs 22/36 MLAs Mahayuti.",
+      "Medium confidence: PC-to-AC alliance divergence patterns. Plausibly indicate split-ticket behaviour but not proven without segment-level Lok Sabha data.",
+      "Low confidence: voter motive. Media reporting offers narratives (national vs local framing, candidate brand, ground machinery); the dataset cannot test those directly.",
     ],
   },
   {
@@ -343,9 +343,9 @@ export const SPLIT_TICKET_DEEP: AnalysisBlock[] = [
     items: [
       "Sitting MLA advantage and early nominations (Mahayuti).",
       "Opposition friendly fights and rebel candidates (MVA).",
-      "MNS and independents cutting opposition unity in Mumbai.",
-      "Minority and Dalit consolidation behind MVA in May parliamentary races without repeating in every assembly segment.",
-      "Personal brands: Lodha, Kadam, Thackeray family, Goyal, Patel, etc.",
+      "MNS, AIMIM and independents cutting opposition unity in Mumbai.",
+      "Welfare schemes (Ladki Bahin Yojana) credited statewide between May and November.",
+      "Personal brands: Lodha, Kadam, Thackeray family, Goyal, Patel and others.",
     ],
   },
   {
@@ -385,11 +385,11 @@ export const DATA_LIMITS: AnalysisBlock[] = [
   {
     type: "ul",
     items: [
-      "Lok Sabha vote shares on assembly tiles duplicate the parent PC result for mapping only.",
-      "Assembly turnout uses Mumbai City / Suburban district averages as proxies per sources.ts.",
-      "Demographics in charts are illustrative estimates, not census microdata.",
-      "Swing metric is winner vote-share delta, not standardised party swing.",
-      "No booth-level or candidate expense data in this version.",
+      "AC-segment Lok Sabha leads (Form 20 Part II) are not yet integrated. May colours on each AC tile repeat the parent PC winner.",
+      "Assembly turnout uses Mumbai City / Suburban district averages applied to every AC in that district. Not a per-AC participation rate.",
+      "Winner-share difference is dataset-internal: November-winner share minus May-winner share, which compares different parties when the winner changed.",
+      "Demographic tiers (income, density, geo zone, community share) are illustrative estimates — exploratory, not evidentiary.",
+      "No booth-level, exit-poll, or candidate-expense data in this version.",
     ],
   },
   {

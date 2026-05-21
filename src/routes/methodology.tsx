@@ -47,39 +47,58 @@ function Page() {
           <h2 className="text-lg font-semibold">Lok Sabha on assembly map</h2>
           <p className="mt-2 text-muted-foreground">
             May results on each assembly tile repeat the parent parliamentary seat winner (6 city-wide results). This is
-            for visual comparison only, not AC-level parliamentary counts.
+            for visual comparison only — it is NOT an AC-level parliamentary count. AC-segment Form 20 leads from CEO
+            Maharashtra are not yet integrated into the dataset.
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold">Split-ticket definition</h2>
+          <h2 className="text-lg font-semibold">"PC-to-AC alliance divergence" (not split-ticket)</h2>
           <p className="mt-2 text-muted-foreground">
-            An area is split-ticket when the May parliamentary alliance for its PC differs from the November assembly
-            winning alliance for that AC. Count: 18 of 36 in the current dataset (15 MVA→Mahayuti, 3 reverse).
+            An area is flagged as divergent when the parent Lok Sabha winning alliance for its PC differs from the
+            November assembly winning alliance for that AC. The count is computed live from the dataset by
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-[11px]">divergenceCounts()</code> in{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">src/lib/divergence.ts</code>, so every page in
+            the app reports the same number. True ballot-level split-ticket voting needs AC-segment counts and is
+            not claimed by this app in its current form.
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold">Swing metric</h2>
+          <h2 className="text-lg font-semibold">"Winner-share difference" (renamed from swing)</h2>
           <p className="mt-2 text-muted-foreground">
-            vote_share_swing_pct = November winner vote share minus May winner vote share on the same tile. It is not a
-            classic party swing (e.g. BJP share minus Congress share).
+            The metric is November-winner vote share minus May-winner vote share on the same tile. When the winner
+            changes between elections, those two numbers belong to different parties, so this is NOT a classic
+            standardised swing. We label it "winner-share difference" or "winner-share shift" everywhere it appears.
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold">Demographics</h2>
+          <h2 className="text-lg font-semibold">Turnout (district proxy)</h2>
           <p className="mt-2 text-muted-foreground">
-            Income tier, density, geo zone, and Muslim population share in charts are illustrative estimates for pattern
-            exploration, not official census microdata.
+            Vidhan Sabha turnout values are Mumbai City (52.65%) and Mumbai Suburban (56.39%) district averages applied
+            uniformly to every AC in that district. They are not constituency-level participation rates and should not
+            be used to infer local mobilisation.
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold">Narrative analysis</h2>
+          <h2 className="text-lg font-semibold">Demographics (exploratory only)</h2>
           <p className="mt-2 text-muted-foreground">
-            Long-form text on the Analysis page cites news outlets and separates verified counts from interpretation. It
-            does not use exit polls or booth-level microdata in this version.
+            Income tier, density, geo zone, and Muslim population share in charts are illustrative estimates calibrated
+            to known Mumbai geography. They are exploratory, not evidentiary, and should never be read as confirming
+            community-block voting.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold">Confidence levels</h2>
+          <p className="mt-2 text-muted-foreground">
+            Every claim in the app is tagged with one of three levels: <span className="font-medium text-foreground">High</span> (verified
+            seat outcomes), <span className="font-medium text-foreground">Medium</span> (alliance-divergence patterns from
+            aggregate results), <span className="font-medium text-foreground">Low</span> (voter-motive interpretation drawn
+            from reporting). The Analysis page also includes a "Rival explanations" section and a battleground
+            classification of the 36 ACs.
           </p>
         </section>
 

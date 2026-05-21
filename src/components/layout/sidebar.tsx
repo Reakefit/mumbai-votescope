@@ -43,9 +43,9 @@ export function Sidebar() {
         })}
       </nav>
       <div className="mt-auto px-2 pt-4 text-[10px] text-muted-foreground leading-relaxed">
-        Official results · ECI / IndiaVotes <br></br>
-        Built by Mouni Malyala
-        mouni221100@gmail.com
+        <div>Official results · ECI / IndiaVotes</div>
+        <div className="mt-1">Built by Mouni Malyala</div>
+        <div>mouni221100@gmail.com</div>
       </div>
     </aside>
   );
